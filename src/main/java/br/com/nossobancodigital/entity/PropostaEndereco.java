@@ -1,5 +1,6 @@
 package br.com.nossobancodigital.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -15,6 +16,7 @@ import javax.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -57,5 +59,6 @@ public class PropostaEndereco {
             @JoinColumn(name = "clientePf_id", referencedColumnName = "id"),
             inverseJoinColumns =
             @JoinColumn(name = "endereco_id", referencedColumnName = "id"))
+    @JsonManagedReference
     private PropostaInfosBasicas propostaInfosBasicas;
 }

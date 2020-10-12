@@ -1,5 +1,6 @@
 package br.com.nossobancodigital.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import java.util.Date;
 import javax.persistence.CascadeType;
@@ -8,6 +9,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.MapsId;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -17,6 +19,7 @@ import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.validator.constraints.br.CPF;
 
 @AllArgsConstructor
@@ -52,6 +55,7 @@ public class PropostaInfosBasicas {
     @Column(unique = true, nullable = false)
     private String cpf;
 
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(mappedBy = "propostaInfosBasicas", orphanRemoval = true)
+    @JsonBackReference
     private PropostaEndereco propostaEndereco;
 }
