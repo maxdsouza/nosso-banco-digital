@@ -6,7 +6,4 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface PropostaInfosBasicasRepository extends JpaRepository<PropostaInfosBasicas, Long> {
-
-    Boolean existsByEmail(String email);
-    Boolean existsByCpf(String cpf);
 }

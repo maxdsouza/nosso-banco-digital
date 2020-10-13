@@ -60,10 +60,9 @@ public class ExcecaoGlobalPersonalizado extends ResponseEntityExceptionHandler {
         body.put("status", status.value());
 
         if (e instanceof DataIntegrityViolationException) {
-            if (e.getMessage().contains("CLIENTE_PF(CPF)")) {
+            if (e.getMessage().contains("(CPF)")) {
                 body.put("erro", "CPF não pode ser duplicado");
-            }
-            if (e.getMessage().contains("CLIENTE_PF(EMAIL)")) {
+            } else if (e.getMessage().contains("(EMAIL)")) {
                 body.put("erro", "Email não pode ser duplicado");
             }
 
@@ -77,6 +76,16 @@ public class ExcecaoGlobalPersonalizado extends ResponseEntityExceptionHandler {
             body.put("erros", erros);
 
             return new ResponseEntity<>(body, status);
+        } else if (e instanceof IndexOutOfBoundsException && (e.getMessage().contains("length 0")
+                && e.getStackTrace()[5].getMethodName().contains("salvarEndereco"))) {
+
+            body.put("erro", "Deve cadastrar uma proposta de informações " +
+                    "básicas primeiro, " +
+                    "e será relacionada a última proposta de informações básicas " +
+                    "com este endereço de proposta.");
+
+            return new ResponseEntity<>(body, status);
+
         }
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }

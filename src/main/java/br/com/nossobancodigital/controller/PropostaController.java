@@ -4,10 +4,14 @@ import br.com.nossobancodigital.entity.PropostaEndereco;
 import br.com.nossobancodigital.entity.PropostaInfosBasicas;
 import br.com.nossobancodigital.repository.PropostaEnderecoRepository;
 import br.com.nossobancodigital.repository.PropostaInfosBasicasRepository;
+import io.swagger.annotations.ApiOperation;
+import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import javax.servlet.http.HttpServletResponse;
+import javax.transaction.Transactional;
 import javax.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -19,14 +23,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import springfox.documentation.annotations.ApiIgnore;
 
 @RestController
-@RequestMapping(path = "/proposta")
 public class PropostaController {
 
     private final PropostaInfosBasicasRepository propostaInfosBasicasRepository;
     private final PropostaEnderecoRepository propostaEnderecoRepository;
-    private List<URI> uriList = new ArrayList<>();
+    private List<URI> uriListInfosBasicas = new ArrayList<>();
 
     PropostaController(PropostaInfosBasicasRepository propostaInfosBasicasRepository,
                        PropostaEnderecoRepository propostaEnderecoRepository) {
@@ -34,34 +38,44 @@ public class PropostaController {
         this.propostaEnderecoRepository = propostaEnderecoRepository;
     }
 
-    @PostMapping(path = "/informacoes-basicas")
+    @ApiIgnore
+    @RequestMapping(path = "/")
+    public void redirecionaSwagger(HttpServletResponse response) throws IOException {
+        response.sendRedirect("/swagger-ui.html");
+    }
+
+    @ApiOperation(value = "Cadastro de informações básicas do cliente")
+    @PostMapping(path = "/proposta/informacoes-basicas")
     public ResponseEntity<PropostaInfosBasicas> salvarInfosBasicas(@Valid @RequestBody PropostaInfosBasicas propostaInfosBasicas) {
         PropostaInfosBasicas propostaInfosBasicasPersistida = propostaInfosBasicasRepository.save(propostaInfosBasicas);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
                 .buildAndExpand(propostaInfosBasicasPersistida.getId()).toUri();
 
-        uriList.add(location);
+        uriListInfosBasicas.add(location);
 
         return ResponseEntity.created(location).build();
     }
 
-    @GetMapping(path = "/informacoes-basicas")
+    @ApiOperation(value = "Retorna todas as propostas de informações básicas cadastradas")
+    @GetMapping(path = "/proposta/informacoes-basicas")
     public List<PropostaInfosBasicas> buscarTodasInfosBasicas() {
         return propostaInfosBasicasRepository.findAll();
     }
 
-    @GetMapping(path = {"/informacoes-basicas/{id}"})
+    @ApiOperation(value = "Retorna uma proposta de informações básicas cadastrada de acordo com o id digitado")
+    @GetMapping(path = {"/proposta/informacoes-basicas/{id}"})
     public ResponseEntity<PropostaInfosBasicas> buscarInfosBasicasPorId(@PathVariable long id) {
         return propostaInfosBasicasRepository.findById(id)
                 .map(record -> ResponseEntity.ok().body(record))
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping(path = "/informacoes-basicas/{id}")
+    @ApiOperation(value = "Atualiza as informações básicas do cliente cadastrado")
+    @PutMapping(path = "/proposta/informacoes-basicas/{id}")
     public ResponseEntity<PropostaInfosBasicas> atualizarInfosBasicas(
-        @PathVariable("id") long id,
-        @RequestBody @Valid PropostaInfosBasicas propostaInfosBasicas
+            @PathVariable("id") long id,
+            @RequestBody @Valid PropostaInfosBasicas propostaInfosBasicas
     ) {
         return propostaInfosBasicasRepository.findById(id)
                 .map(record -> {
@@ -75,7 +89,8 @@ public class PropostaController {
                 }).orElse(ResponseEntity.notFound().build());
     }
 
-    @DeleteMapping(path = {"/informacoes-basicas/{id}"})
+    @ApiOperation(value = "Deleta um cadastro informações básicas do cliente de acordo com o id digitado")
+    @DeleteMapping(path = {"/proposta/informacoes-basicas/{id}"})
     public ResponseEntity<Object> deletarInfosBasicas(@PathVariable long id) {
         return propostaInfosBasicasRepository.findById(id)
                 .map(record -> {
@@ -84,20 +99,21 @@ public class PropostaController {
                 }).orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping(path = "/endereco")
-    public ResponseEntity<PropostaEndereco> salvarEndereco(@Valid @RequestBody PropostaEndereco propostaEndereco){
+    @ApiOperation(value = "Cadastro do endereço cliente da proposta")
+    @PostMapping(path = "/proposta/endereco")
+    @Transactional
+    public ResponseEntity<PropostaEndereco> salvarEndereco(@Valid @RequestBody PropostaEndereco propostaEndereco) {
 
-        String caminho = uriList.get(0).getPath();
+        String caminho = uriListInfosBasicas.get(0).getPath();
 
         Optional<PropostaInfosBasicas> propostaInfosBasicasEncontrada = propostaInfosBasicasRepository.findById(Long.parseLong(caminho.substring(30)));
-
-        propostaEndereco.setPropostaInfosBasicas(propostaInfosBasicasEncontrada.get());
+        propostaInfosBasicasEncontrada.ifPresent(propostaInfosBasicas -> propostaEndereco.setPropostaInfosBasicas(propostaInfosBasicas));
         PropostaEndereco propostaEnderecoPersistida = propostaEnderecoRepository.save(propostaEndereco);
+
+        uriListInfosBasicas.clear();
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
                 .buildAndExpand(propostaEnderecoPersistida.getId()).toUri();
-
-        uriList.add(location);
 
         return ResponseEntity.created(location).build();
     }

@@ -1,7 +1,5 @@
 package br.com.nossobancodigital.entity;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -16,7 +14,6 @@ import javax.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -28,37 +25,34 @@ public class PropostaEndereco {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Pattern(message = "CEP com formato incorreto", regexp = "\\d{5}-\\d{3}")
-    @NotNull(message = "CEP é obrigatório")
+    @Pattern(message = "CEP com formato incorreto.", regexp = "\\d{5}-\\d{3}")
+    @NotNull(message = "CEP é obrigatório.")
     @Column(nullable = false)
     private String cep;
 
-    @NotEmpty(message = "Rua é obrigatório")
+    @NotEmpty(message = "Rua é obrigatório.")
     @Column(nullable = false)
     private String rua;
 
-    @NotEmpty(message = "Bairro é obrigatório")
+    @NotEmpty(message = "Bairro é obrigatório.")
     @Column(nullable = false)
     private String bairro;
 
-    @NotEmpty(message = "Complemento é obrigatório")
+    @NotEmpty(message = "Complemento é obrigatório.")
     @Column(nullable = false)
     private String complemento;
 
-    @NotEmpty(message = "Cidade é obrigatória")
+    @NotEmpty(message = "Cidade é obrigatória.")
     @Column(nullable = false)
     private String cidade;
 
-    @NotEmpty(message = "Estado é obrigatório")
+    @NotEmpty(message = "Estado é obrigatório.")
     @Column(nullable = false)
     private String estado;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinTable(name = "cliente_endereco",
-            joinColumns =
-            @JoinColumn(name = "clientePf_id", referencedColumnName = "id"),
-            inverseJoinColumns =
-            @JoinColumn(name = "endereco_id", referencedColumnName = "id"))
-    @JsonManagedReference
+    @OneToOne
+    @JoinTable(name = "propostaib_propostaend",
+            joinColumns = @JoinColumn(name = "propostaInfosBasicas_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "propostaEndereco_id", referencedColumnName = "id"))
     private PropostaInfosBasicas propostaInfosBasicas;
 }
